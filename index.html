@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>JS Playground</title>
+    <link rel="icon" href="./icon.ico" />
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+
+        display: flex;
+
+        font-family: monospace, sans-serif;
+        background-color: #017acc;
+      }
+      textarea {
+        width: 50%;
+        padding: 1rem;
+        margin: 1rem 0.5rem 1rem 1rem;
+
+        font-family: monospace;
+        font-size: 1rem;
+        box-shadow: 8px 8px #2b2b2b;
+
+        border: none;
+        outline: none;
+        resize: none;
+      }
+      #output {
+        width: 50%;
+        padding: 1rem;
+        margin: 1rem 1rem 1rem 0.5rem;
+
+        background: #111;
+        color: #0f0;
+        box-shadow: 8px 8px #2b2b2b;
+        line-height: 1.5rem;
+
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <textarea id="editor" placeholder="Пиши JavaScript тут..."></textarea>
+    <div id="output"></div>
+    <script>
+      const APP_STORRAGE_ID = "consolecoding_jsplayground_code"; // additional
+      const editor = document.getElementById("editor");
+      const output = document.getElementById("output");
+      const initialCode = localStorage.getItem(APP_STORRAGE_ID); // additional
+
+      editor.value = initialCode || editor.value; // additional
+
+      function runCode() {
+        const code = editor.value;
+        const originalConsoleLog = console.log;
+        output.textContent = ""; // additional
+
+        console.log = function (...args) {
+          output.textContent += `> ${args.join(" ")}\n`;
+          originalConsoleLog.apply(console, args);
+        };
+
+        try {
+          new Function(code)();
+          output.scrollTop = output.scrollHeight;
+          localStorage.setItem(APP_STORRAGE_ID, code); // additional
+        } catch (err) {
+          output.textContent += "⚠️ " + err.message;
+        }
+
+        console.log = originalConsoleLog;
+      }
+
+      function debounce(fn, delay) {
+        let timeout;
+        return (...args) => {
+          clearTimeout(timeout);
+          timeout = setTimeout(() => fn(...args), delay);
+        };
+      }
+
+      const debouncedRun = debounce(runCode, 300);
+
+      editor.addEventListener("input", debouncedRun);
+      window.addEventListener("DOMContentLoaded", runCode);
+    </script>
+  </body>
+</html>
